@@ -4,7 +4,8 @@
 This project is a typical end-to-end data analytics project on an hypothetical e-commerce dataset covering:
 - Data Profiling - a rigorous examination of the tables in the dataset to identify cases of bad quality data
 - Data Cleaning - a process that transfroms substandard data to quality data for accurate analysis
-- Data Analysis - the final stage that involved drawing insights from data to make actionable recommendations
+- Data Analysis - the stage that involved drawing insights from data to make actionable recommendations
+- Data Visualisation (In progress) - the final stage to create a dashboard and visualize insights for easy understanding of    analyses and findings
 
 **Business Goal**: To gain insights about customer behaviors, sellers efficiecy and product productivity and help Head of Products and Head of Sales drive strategic plans and decsion making for 2025 business year. 
 
@@ -242,3 +243,61 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 
 ### Additional Infromation
 Based on other investigations such duplicates checks, data type check, and format and pattern consistency check, there were no anomalies detected. 
+
+---
+
+## Data Cleaning Process
+
+After profiling the data, it made it easier to clean data to ensure quality and conisistency for accurate analysis. Like profiling, this process follows a structured approach. All tables were cleaned into a VIEW rather than creating another table to preverse the original data and encorage flexibility. Each VIEW was created with CREATE OR REPLACE VIEW and named as cleaned_prefix, for example cleaned_sellers and cleaned_orders.
+
+For the complete cleaning queries for all tables, see [cleaning_Script]
+
+### Step 1: Standardize Text Columns
+
+**Tables affected:** customers, sellers, products
+
+**Issues Found:** Text columns across multiple tables contained inconsitent values, typos, inconsitent casing, and abbreviations.
+Specific cases have been explained in data profling section above in city columns of customers and sellers table amd category column of products tables
+
+**Decision:** INITCAP, TRIM, CASE, Nested REPLACE functions to standardize all text values. CASE WHEN was used to expand abbreviations into full reabable values
+
+**Result:** All text columns standardized across affected tables
+
+### Step 2: Standardize Numerica Columns
+
+**Tables affected:** reviews
+**Issues Found:** Inconsitent rating number such as 0,-1, and 7 were idetified in the rating column.
+
+**Decision:** Used CASE WHEN to convert non-excepted rating number to their nearest possible number rating. 0,-1 to 1 and 7 to 5
+
+**Reason:** To ensure that ratings is consistent with expected range of 1-5, while ensuring no loss of data.
+
+**Result:** The rating column in the review table now contain rating within the range of 1-5
+
+### Step 3: Handle Missing Values
+
+**Tables affected:** products, orders, order_items, payments
+
+**Issues Found:** missing unit prices values in products and order_items table, mising total amoount values in order_items payment, and orders tables and missing delivery date values in the orders table
+
+**Decision:** After close observation, missing unit prices values in product table was connected in to the missing unit prices and total amount in other tables. With the help of browser and AI, an approximate average price was selected to replace the missing values. Once mising values of products were sorted, JOIN was used reflect unit_price of cleaned_products to solve mising values in order and order_items. However, total_amount of payment table was left untouched. For the missing delivery data, no action was made. 
+
+**Reason:** The decision to replace unit_price with estimated average values gotten from the internet mirrors a real-world situation whereby in the same situation, a data analyst is expected to trace the seller_id and get information about the unit price. For inaction in payment table, through observation identified that some amount not recorded were not connected to missing price, and this could signify audit to uncover suspicious activities. While for the missing delivery date values, the missing values simply reflects orders that hasn't been completed yet. 
+
+**Result:** The unit_price and amount column across multiple tables now contain values. In the VIEW, line total of order_items, and amount of orders table were renamed to total_amount.
+
+### Step 4: Handling Outliers
+
+**Tables affected:** products
+
+**Issues Found:** Extreme values in the unit price column.
+
+**Decision:** No action was made after careful observation.
+
+**Reason:** Products price were checked in real life and it was discovered that prices fall within the range of price, therefore, it is accurate based on the context.
+
+**Result:** The extreme values in unit_price column of the products table was left untouched. 
+
+---
+
+## Data Analysis
