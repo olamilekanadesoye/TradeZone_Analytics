@@ -597,3 +597,12 @@ GROUP BY customer_segment;
 
 #### Full analysis queries available here 
 > 📄 [data_analysis.sql](./scripts/data_analysis.sql)
+
+---
+
+## Findings
+
+### Research Question 1
+
+1. Subquestion 1 shows that 30 days conversion rate for all 5 states is significanly low - below 50% for each states. This shows that TradeZone struggles to convert its new users as early as possible. This program could be as a result of sereval reasons such as **low perceived business credibility**, **difficulity in usablity of the website**, **low representation of ideal users for the business**, and **requirement to nudge the customer to purchase a product**.
+2. Then, subsection 2 tells our finidings further as it shows us that among these early purchasing customers across 5 states, 
