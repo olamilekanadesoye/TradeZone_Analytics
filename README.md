@@ -244,13 +244,14 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 ### Additional Infromation
 Based on other investigations such duplicates checks, data type check, and format and pattern consistency check, there were no anomalies detected. 
 
+#### Full profiling queries available here 
+> 📄 [data_profiling.sql](./scripts/data_profiling.sql)
+
 ---
 
 ## Data Cleaning Process
 
 After profiling the data, it made it easier to clean data to ensure quality and conisistency for accurate analysis. Like profiling, this process follows a structured approach. All tables were cleaned into a VIEW rather than creating another table to preverse the original data and encorage flexibility. Each VIEW was created with CREATE OR REPLACE VIEW and named as cleaned_prefix, for example cleaned_sellers and cleaned_orders.
-
-For the complete cleaning queries for all tables, see [cleaning_Script]
 
 ### Step 1: Standardize Text Columns
 
@@ -297,6 +298,9 @@ Specific cases have been explained in data profling section above in city column
 **Reason:** Products price were checked in real life and it was discovered that prices fall within the range of price, therefore, it is accurate based on the context.
 
 **Result:** The extreme values in unit_price column of the products table was left untouched. 
+
+#### Full cleaning queries available here 
+> 📄 [data_cleaning.sql](./scripts/data_cleaning.sql)
 
 ---
 
@@ -577,3 +581,5 @@ GROUP BY customer_segment;
 |Low Spenders|	47	|22796.30|	1071426.11
 |Medium Spenders|	27	|67692.48|	1827697.03
 
+#### Full analysis queries available here 
+> 📄 [data_analysis.sql](./scripts/data_analysis.sql)
