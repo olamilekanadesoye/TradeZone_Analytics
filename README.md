@@ -3,15 +3,16 @@
 ---
 
 ## Table of Contents
-1. [Project Overview](##project-overview)
-2. [Tools Used](#tools-used)
-3. [About Dataset](##about-dataset)
-4. [Data Profiling Summary](#data-profiling-summary)
+1. [Project Overview](#project-overview)
+2. [About Dataset](#about-dataset)
+3. [Project Objectives](#project-objectives)
+4. [Data Profiling](#data-profiling)
 5. [Data Cleaning Process](#data-cleaning-process)
-6. [Analysis & Findings](#analysis--findings)
-7. [Recommendations](#recommendations)
-8. [Limitations](#limitations)
-9. [Conclusion](#conclusion)
+6. [Analysis](#analysis)
+7. [Findings](#findings)
+8. [Recommendations](#recommendations)
+9. [Limitations](#limitations)
+10. [Conclusion](#conclusion)
 
 ## Project Overview
 This project is a typical end-to-end data analytics project on an hypothetical e-commerce dataset covering:
@@ -317,7 +318,7 @@ Specific cases have been explained in data profling section above in city column
 
 ---
 
-## Analysis and Findings
+## Analysis
 
 Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. To answer each reseach hypothetical questions, 2 business questions were looked into. 
 
