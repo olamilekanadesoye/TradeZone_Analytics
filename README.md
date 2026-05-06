@@ -1,5 +1,18 @@
 # TradeZone_Business_Analytics
+
 ---
+
+## Table of Contents
+1. [Project Overview](##project-overview)
+2. [Tools Used](#tools-used)
+3. [About Dataset](##about-dataset)
+4. [Data Profiling Summary](#data-profiling-summary)
+5. [Data Cleaning Process](#data-cleaning-process)
+6. [Analysis & Findings](#analysis--findings)
+7. [Recommendations](#recommendations)
+8. [Limitations](#limitations)
+9. [Conclusion](#conclusion)
+
 ## Project Overview
 This project is a typical end-to-end data analytics project on an hypothetical e-commerce dataset covering:
 - Data Profiling - a rigorous examination of the tables in the dataset to identify cases of bad quality data
