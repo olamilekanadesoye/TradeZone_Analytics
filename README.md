@@ -300,4 +300,280 @@ Specific cases have been explained in data profling section above in city column
 
 ---
 
-## Data Analysis
+## Analysis and Findings
+
+Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. To answer each reseach hypothetical questions, 2 business questions were looked into. 
+
+### Research Question 1
+To what extent does early purchase behavior among new customers predict long-term retention, and how does this vary across state?
+
+**Sub-question 1:** In the year 2024, how did TradeZone E-commerce perform in converting new customer signups into purchasing customers in 30 days across all states. 
+
+```sql
+SELECT
+	state,
+	COUNT(customer_id) AS total_new_signups,
+	COUNT(first_purchase) AS bought_within_30_days,
+	ROUND(COUNT(first_purchase) * 100 / COUNT(customer_id),2) AS percentage
+FROM(
+	SELECT DISTINCT ON (c.customer_id)
+		c.customer_id,
+		c.state,
+		o.order_id,
+		c.signup_date,
+		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+	FROM cleaned_customers c
+	LEFT JOIN cleaned_orders o
+		ON c.customer_id = o.customer_id
+		AND o.order_date <= c.signup_date + INTERVAL '30 days'
+	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
+)
+GROUP BY state
+ORDER BY total_new_signups DESC;
+```
+
+**Result**
+
+|State|total_new_signup|bought_within_30days|percentage|
+|----|-----|----|------|
+|Lagos|	146|	72|	49.00|
+|FCT|	92|	38	|41.00|
+|Rivers|	66|	28|	42.00|
+|Oyo|	63|	21	|33.00|
+|Kano|	58|	18|	31.00|
+
+**Sub-question 2:** In the year 2024, how did TradeZone E-commerce perform in retaining the 30 days converters across all states. 
+
+```sql
+WITH converters AS(
+	SELECT DISTINCT ON (c.customer_id)
+		c.customer_id,
+		c.state,
+		o.order_id,
+		c.signup_date,
+		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+	FROM cleaned_customers c
+	LEFT JOIN cleaned_orders o
+		ON c.customer_id = o.customer_id
+	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
+	AND o.order_date <= c.signup_date + INTERVAL '30 days'
+),
+retainers AS(
+	SELECT DISTINCT ON (e.customer_id)
+		e.*
+	FROM converters e
+	WHERE EXISTS(
+		SELECT 1
+		FROM cleaned_orders o
+		WHERE o.customer_id = e.customer_id
+		AND order_date > first_purchase
+		AND o.order_date < e.signup_date + INTERVAL '90 days'
+))
+SELECT
+	c.state,
+	COUNT(DISTINCT c.customer_id) AS total_converters,
+	COUNT(DISTINCT r.customer_id) AS total_retainers,
+	ROUND((COUNT(DISTINCT r.customer_id) * 100) / COUNT(DISTINCT c.customer_id):: numeric,2) AS retention_rate_pct
+FROM converters c
+LEFT JOIN retainers r 
+	ON c.customer_id = r.customer_id
+GROUP BY c.state
+ORDER BY retention_rate_pct DESC
+```
+
+**Result**
+
+|State|total_converters|total_retainers|percentage|
+|----|-----|----|------|
+|Rivers|	28|	23|	82.14|
+|Oyo|	21|	17	|80.95|
+|Lagos|	72|	58|	80.56|
+|FCT|	38|	26	|68.42|
+|Kano|	18|	12|	66.67|
+
+### Research Question 2
+Which products are driving sustainable reveune and does high sales volume correlate with high customer ratings?
+
+**Sub-question 1:** What are the top 10 revenue generating products in 2024?
+
+```sql
+SELECT
+	p.product_name,
+	p.category,
+	SUM(t.total_amount) AS total_revenue,
+	COUNT(t.order_id) AS total_number_of_orders
+FROM cleaned_products p
+JOIN cleaned_order_items t
+	ON p.product_id = t.product_id
+JOIN cleaned_orders o
+	ON t.order_id = o.order_id
+WHERE EXTRACT(YEAR FROM o.order_date) = 2024
+GROUP BY p.product_name,p.category
+ORDER BY total_revenue DESC
+LIMIT 10;
+```
+
+**Result**
+
+|products|category|total_revenue|total_number_of_orders|
+|----|-----|----|------|
+|HP Pavilion 15 Laptop Intel i5 - v2|	Electronics|	26702504.36|	25
+|Mechanical Keyboard RGB Backlit	|Electronics|	25124824.10|	24
+|TP-Link WiFi Router AC1200 - v2|Electronics|	23727475.50|	24
+|Hisense 32 inch LED TV|Electronics|	23597927.50|	26
+|Apple AirPods Pro 2nd Gen|Electronics|	21681843.09|	25
+|JBL Bluetooth Speaker Portable|Electronics|	20388232.26|	22
+|Kingston 256GB USB Flash Drive - v2	|Electronics|	19165030.56|	21
+|Garmin Forerunner 255 Watch - v2	|Electronics|	18470211.35|	29
+|Lenovo IdeaPad 3 Laptop 8GB RAM - v2	|Electronics|	18182471.45|	20
+|Anker PowerBank 20000mAh USB-C	|Electronics|	17729180.30|	19
+
+
+**Sub-question 2:** Does well rated products translate to high revenue?
+
+```sql
+SELECT
+	v.avg_rating_segment,
+	COUNT(DISTINCT v.product_id) AS product_count,
+	SUM(t.total_amount) AS total_revenue
+FROM(
+	SELECT
+		product_id,
+		ROUND(AVG(rating),2) AS avg_review_rating,
+		CASE
+			WHEN ROUND(AVG(rating),2) >= 4.00 THEN 'High Rated'
+			WHEN ROUND(AVG(rating),2) BETWEEN 3.0 AND 3.99 THEN 'Mid Rated'
+			WHEN ROUND(AVG(rating),2) < 3.00 THEN 'Low Rated'
+		END AS avg_rating_segment
+	FROM cleaned_reviews
+	GROUP BY product_id
+) v
+LEFT JOIN cleaned_order_items t
+ON v.product_id = t.product_id
+GROUP BY avg_rating_segment;
+```
+
+**Result**
+
+|rating_segment|product_count|total_revenue|
+|----|-----|----|
+|High Rated|	113|	351438299.51|
+|Low Rated|	31|	125689450.22	|
+|Mid Rated|	121|	501380399.31|
+
+### Research Question 3
+Do the fastest-filling sellers alos maintain the highest customer ratings, and what does this relationship reveal about the seller-side drivers of revenue underperformace?
+
+**Sub-question 1:** Does the level of fullfillment time of each sellers impact their customer rating in the market
+
+```sql
+SELECT
+	s.seller_name,
+	ROUND(AVG(o.delivery_date - o.order_date),2) AS average_fulfilment_day,
+	ROUND(AVG(r.rating),2) AS average_customer_rating
+FROM cleaned_sellers s
+LEFT JOIN cleaned_orders o
+	ON s.seller_id = o.seller_id
+LEFT JOIN cleaned_reviews r
+	ON o.order_id = r.order_id
+WHERE o.order_status = 'Delivered'
+GROUP BY s.seller_name
+HAVING COUNT(o.order_id) >= 20
+ORDER BY average_fulfilment_day ASC
+LIMIT 20;
+```
+
+**Result**
+
+|seller_name|average_fulfillment_day|average_customer_rating
+|----|-----|----|
+|RunFast NG|	3.80|	3.25
+|SportNation NG|	3.86|	3.65
+|SportsCentral NG|	4.10|	4.08
+|GadgetPro NG|	4.16|	3.70
+|TechPower NG|	4.40|	3.40
+|AgriMart NG|	4.52|	2.50
+|FashionHub NG|	4.52|	3.55
+|TechHub Nigeria|	4.59|	4.13
+|DigiTech NG|	4.60|3.67
+|GadgetKing NG|	4.61|	1.79
+|AllFashion NG|	4.70|	4.56
+|OrganicLife NG|	4.86|	3.67
+|PureSkin NG|	4.90	|3.38
+|EarthHome NG|	4.90|	3.80
+|GreenHome Stores|	4.95|	3.09
+|TechStore NG|	4.95	|3.55
+|StyleKraft NG|	5.04	|4.07
+|WellnessHub NG|	5.08|	3.86
+|VogueNG|	5.26	|4.18
+|QuickTech NG|	5.38|	3.69
+
+
+**Sub-question 2:** For consideration for a top seller bonus, who are the most productive sellers with a considerable high rating and have completed at least 10 orders 
+
+```sql
+SELECT 
+	s.seller_name,
+	ROUND(AVG(r.rating),2) AS average_rating,
+	SUM(o.total_amount) AS total_revenue
+FROM cleaned_sellers s
+LEFT JOIN cleaned_orders o
+	ON s.seller_id = o.seller_id
+LEFT JOIN cleaned_reviews r
+	ON r.order_id =o.order_id
+WHERE EXTRACT(YEAR FROM order_date) = 2024
+GROUP BY s.seller_id,s.seller_name
+HAVING COUNT(o.order_id) >= 10
+	AND AVG(r.rating) >= 4.00
+ORDER BY total_revenue DESC
+LIMIT 10;
+```
+
+**Result**
+
+|seller_name|average_rating|total_revenue
+|----|-----|----|
+|SportsCentral NG|	4.08|	15053739.46
+|GlowBeauty Shop|	4.29	|14470467.06
+|GreenSpace NG|	4.50	|13934943.44
+|HomeNest NG|	4.50	|13131469.72
+|BeautyNation NG|	4.27|	13111651.24
+|FitZone NG|	4.20	|12282326.09
+|VogueNG|	4.22	|11929761.12
+|HomeEssentials NG|	4.14|	11690992.11
+|SkinGlow NG|	4.22|	11471932.44
+|CozyHome NG|	4.00|	11193098.83
+
+### Supporting Question
+How does diverese customer groupings contribute to the revenue of the business in 2024?
+
+```sql
+SELECT
+	customer_segment,
+	COUNT(customer_id) AS customer_count,
+	ROUND(AVG(total_spend),2) AS average_spend,
+	SUM(total_spend) AS revenue_contribution
+FROM(
+	SELECT
+		customer_id,
+		SUM(total_amount) AS total_spend,
+		CASE
+			WHEN SUM(total_amount) >= 100000 THEN 'High Spenders'
+			WHEN SUM(total_amount) BETWEEN 50000 AND 99999 THEN 'Medium Spenders'
+			WHEN SUM(total_amount) < 50000 THEN 'Low Spenders'
+		END AS customer_segment
+	FROM cleaned_orders
+	WHERE EXTRACT(YEAR FROM order_date) = 2024
+	GROUP BY customer_id
+)
+GROUP BY customer_segment;
+```
+
+**Result**
+
+|customer_segment|customer_count|average_customer_spend|total_average|
+|----|-----|----|----|
+|High Spenders|	603|	1446150.38|	872028676.13
+|Low Spenders|	47	|22796.30|	1071426.11
+|Medium Spenders|	27	|67692.48|	1827697.03
+
