@@ -615,3 +615,53 @@ GROUP BY customer_segment;
 ### Research Question 3
 
 1. The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to seller inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
+
+---
+
+## Recommendations
+
+1. There is yet to be a conclusion on the certain issue hindering early customer conversions due to lack of data and information. For example, we could have understood if we attract the right customers for each products if we had customer ages and then conduct an analysis to approve or refute this issue accordingly. While data limitation prevents a definitive conclusion, teh rentention allows us to narrow the probable causes to three. Each carries a different cost of investigation and the following approach is recommeded. To nudge new users, you will most likely need an incentive like new bonus discount or promotion sales like a black friday once in a month for a limited period. If something similar already exist, it futher narrows our issue to two - low business credibility or difficult website usability. Issue of Website usability can be looked at with a very small group of people even employees. Since our rating isn't up to highest standard and this is something that affect trust, we could focus on improving our rating for a long term and on a short term, display something that tells a postive story that would improve engagement - something like a testimony of delivery or system improvement.
+2. Although customer retention is high across all states, FCT and Kano seems to fall behind with a huge margin against the top 3 states (Rivers, Oyo and Lagos). This is worth paying attention to. We should look at what strategy is faciliting retention in the top states and adopt it to FCT and Kano. However it is important to accommodate the context of the market share in both states.
+3. This is perphas the most important segment the company must address crtically. Based on the sub-hypotheses, findings shows that our revenue is reliant on one category- electronics. I would advice we diversify our revenue across multiple products especially if we want inclusive and sustainable growth. For a start, we should improve marketing on 3-4 products with high numbers of orders, as well as, incentive that could attract much sales to the others while still maintaining electronics revenue generation. Home and Garden has the second highest revenue and highest number of orders. This makes the category the most immediate product that should be looked into in the diversification process.
+4. Since it is clear that fulfillment time does not single-handely determine customer rating. Other factors such as state of packaging, quality of products, and value and durability expectation could be looked it. To improve ratings overall, TradeZone could adopt a centralised delivery system whereby it handles the delivery of orders. It would manage delivery from packaging, transportation and customer communication during the process. However this system may be costly to build, it would ensure that TradeZone has control over sitaution concerning delivery and at such, improve overall rating. To better understand our customers, we can include a review box to welcome comments after rating. Additionaly, accountability and transparency is improtant for rating. Before products appear on website, they should first be scrutinized by TradeZone and when they appear on website, users should know the conditions that their products come with. The centralized delivery infrasture can be a long term project while the accountable and transparent solution should be a short term solution. Also, customers with valid review complaint could be reached out to and compenseted and this could significantly impact on ratings.  
+
+---
+
+## Limitations
+
+1. Several data and information that would have helped in a more complete analysis were unavailable. For example, customer age that would have narrowed our issues effectively in customer conversion problem was unavailable. Likewise, review comments could have helpful to identify the key issues that were affecting our customer ratings.
+2. Data is hypothetical and this limited a more contextual based analysis. For a business as TradeZone E-Commerce, several contextual situations could play out that must considered before analysis and most importantly recommendation. 
+3. Upon careful observation during the data profiling stage, it was discovered that majority of sellers name didn't correspond to the products they sell. This could distort finding that had to do with sellers but since the data is hypothetical, I had to work with it regardlessly.
+
+--- 
+
+## Conclusion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
