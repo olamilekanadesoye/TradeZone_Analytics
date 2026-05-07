@@ -1,4 +1,4 @@
-# TradeZone_Business_Analytics
+# TradeZone_E-commerce_Analysis
 
 ---
 
@@ -15,7 +15,7 @@
 10. [Conclusion](#conclusion)
 
 ## Project Overview
-This project is a typical end-to-end data analytics project on an hypothetical e-commerce dataset covering:
+This project is a typical end-to-end data analytics project on the dataset of a hypothetical e-commerce called TradeZone covering:
 - Data Profiling - a rigorous examination of the tables in the dataset to identify cases of bad quality data
 - Data Cleaning - a process that transfroms substandard data to quality data for accurate analysis
 - Data Analysis - the stage that involved drawing insights from data to make actionable recommendations
@@ -44,6 +44,10 @@ The dataset is an hypothetical dataset created by organisers of HNG internship. 
 **Time Period**
 
 The data contain business information of 2023 and 2024
+
+**Source**
+
+HNG Internship
 
 **Schema**
 ```
@@ -116,9 +120,9 @@ sellers
 Despite growth, TradeZone e-commerce company is challenged with operational problems such as declining customer retention, unproductive sellers and underperforming products, thereby limiting sustainable revene growth. 
 
 **Research Questions**
-1. To what extent does early purchase behavior among new customers predict long-term retention, and how does this vary across state?
-2. Which products are driving sustainable reveune and does high sales volume correlate with high customer ratings?
-3. Do the fastest-filling sellers alos maintain the highest customer ratings, and what does this relationship reveal about the seller-side drivers of revenue underperformace?
+1. Do new customers in 2024 who make their first purchase within 30 days of signing up stay longer on the platform, and does this differ across Nigerian states?
+2. Which products are the strongest contributors to TradeZone's revenue in 2024, and what does this reveal about how revenue is distributed across product categories?
+3. What is the relationship between how fast sellers fulfil orders and the ratings they receive from customers?
 
 ---
 
@@ -127,7 +131,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 
 ### Missing Values
 |Table      |Columns|Rows   |
-|-----------|------  |------- |            
+|-----------|-------|-------|            
 |order_items|unit_price   | 97      |
 |order_items|line_total  | 97      |
 |orders     |delivery_date  | 1510     |
@@ -323,9 +327,9 @@ Specific cases have been explained in data profling section above in city column
 Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. To answer each reseach hypothetical questions, 2 business questions were looked into. 
 
 ### Research Question 1
-To what extent does early purchase behavior among new customers predict long-term retention, and how does this vary across state?
+How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and does this differ across Nigerian states?
 
-**Sub-question 1:** In the year 2024, how did TradeZone E-commerce perform in converting new customer signups into purchasing customers in 30 days across all states. 
+**Metric:** Customer Acquisition and 30 days Conversion
 
 ```sql
 SELECT
@@ -334,17 +338,17 @@ SELECT
 	COUNT(first_purchase) AS bought_within_30_days,
 	ROUND(COUNT(first_purchase) * 100 / COUNT(customer_id),2) AS percentage
 FROM(
-	SELECT DISTINCT ON (c.customer_id)
+	SELECT
 		c.customer_id,
 		c.state,
-		o.order_id,
 		c.signup_date,
-		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+		MIN(o.order_date) AS first_purchase
 	FROM cleaned_customers c
 	LEFT JOIN cleaned_orders o
 		ON c.customer_id = o.customer_id
 		AND o.order_date <= c.signup_date + INTERVAL '30 days'
 	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
+	GROUP BY c.customer_id, c.state, c.signup_date
 )
 GROUP BY state
 ORDER BY total_new_signups DESC;
@@ -360,24 +364,27 @@ ORDER BY total_new_signups DESC;
 |Oyo|	63|	21	|33.00|
 |Kano|	58|	18|	31.00|
 
-**Sub-question 2:** In the year 2024, how did TradeZone E-commerce perform in retaining the 30 days converters across all states. 
+### Research Question 2
+How effective is TradeZone at retaining customers who made their first purchase within 30 days of signup in 2024, and does this differ across Nigerian states?
+ 
+**Metric:** Early Customer Cohort Retention
 
 ```sql
 WITH converters AS(
-	SELECT DISTINCT ON (c.customer_id)
+	SELECT
 		c.customer_id,
 		c.state,
-		o.order_id,
 		c.signup_date,
-		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+		MIN(o.order_date) AS first_purchase
 	FROM cleaned_customers c
 	LEFT JOIN cleaned_orders o
 		ON c.customer_id = o.customer_id
 	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
 	AND o.order_date <= c.signup_date + INTERVAL '30 days'
+	GROUP BY c.customer_id, c.state, c.signup_date
 ),
 retainers AS(
-	SELECT DISTINCT ON (e.customer_id)
+	SELECT
 		e.*
 	FROM converters e
 	WHERE EXISTS(
@@ -409,11 +416,10 @@ ORDER BY retention_rate_pct DESC
 |FCT|	38|	26	|68.42|
 |Kano|	18|	12|	66.67|
 
-### Research Question 2
-Which products are driving sustainable reveune and does high sales volume correlate with high customer ratings?
+### Research Question 3
+Which products are the strongest contributors to TradeZone's revenue in 2024, and what does this reveal about how revenue is distributed across product categories?
 
-**Sub-question 1:** What are the top 10 revenue generating products in 2024?
-
+**Metric:** Top 10 Products by Revenue 
 ```sql
 SELECT
 	p.product_name,
@@ -446,43 +452,77 @@ LIMIT 10;
 |Lenovo IdeaPad 3 Laptop 8GB RAM - v2	|Electronics|	18182471.45|	20
 |Anker PowerBank 20000mAh USB-C	|Electronics|	17729180.30|	19
 
-
-**Sub-question 2:** Does well rated products translate to high revenue?
+**Sub-question 1a:** What percentage does Electronics category contribute to TradeZone overall revenue?
+**Metric:** Revenue Proportion by Category 
 
 ```sql
 SELECT
-	v.avg_rating_segment,
-	COUNT(DISTINCT v.product_id) AS product_count,
-	SUM(t.total_amount) AS total_revenue
+	*,
+	SUM(total_revenue) OVER() AS overall_total_revenue,
+	ROUND((total_revenue * 100) / SUM(total_revenue) OVER(),2) AS revenue_percentage_share
 FROM(
 	SELECT
-		product_id,
-		ROUND(AVG(rating),2) AS avg_review_rating,
-		CASE
-			WHEN ROUND(AVG(rating),2) >= 4.00 THEN 'High Rated'
-			WHEN ROUND(AVG(rating),2) BETWEEN 3.0 AND 3.99 THEN 'Mid Rated'
-			WHEN ROUND(AVG(rating),2) < 3.00 THEN 'Low Rated'
-		END AS avg_rating_segment
-	FROM cleaned_reviews
-	GROUP BY product_id
-) v
-LEFT JOIN cleaned_order_items t
-ON v.product_id = t.product_id
-GROUP BY avg_rating_segment;
+		p.category,
+		SUM(t.total_amount) AS total_revenue
+	FROM cleaned_products p
+	LEFT JOIN cleaned_order_items t
+		ON p.product_id = t.product_id
+	JOIN orders o
+		ON t.order_id = o.order_id
+	WHERE EXTRACT (YEAR FROM o.order_date) = 2024
+	GROUP BY p.category
+);
+```
+**Result**
+
+|category|total_revenue|overall_total_revenue|revenue_percentage_share|
+|----|-----|----|------|
+|Beauty And Personal Care|	29838759.52|	874927799.27|	3.41
+|Books And Stationery|	12864140.73|	874927799.27|	1.47
+|Electronics|	477299023.33|	874927799.27|	54.55
+|Fashion|	52867338.87|	874927799.27|	6.04
+|Food And Beverages|	16400200.04|	874927799.27|	1.87
+|Home And Garden|	165914747.03|	874927799.27|	18.96
+|Sports And Fitness|	119743589.75|	874927799.27|	13.69
+
+**Sub-question 1b:** Is Electronics high revenue supported by the volume of orders?
+**Metric:** Order Distribution by Category 
+
+```sql
+SELECT
+	*,
+	CUME_DIST() OVER(ORDER BY number_of_orders) AS percentile
+FROM(
+	SELECT
+		p.category,
+		COUNT(t.order_id) AS number_of_orders
+	FROM cleaned_products p
+	LEFT JOIN cleaned_order_items t
+		ON p.product_id = t.product_id
+	JOIN cleaned_orders o
+		ON t.order_id = o.order_id
+	WHERE EXTRACT (YEAR FROM o.order_date) = 2024
+	GROUP BY p.category
+);
 ```
 
 **Result**
 
-|rating_segment|product_count|total_revenue|
+|category|number_of_orders|percentile|
 |----|-----|----|
-|High Rated|	113|	351438299.51|
-|Low Rated|	31|	125689450.22	|
-|Mid Rated|	121|	501380399.31|
+|Beauty And Personal Care|	765|	0.14285714285714285
+|Food And Beverages|	767|	0.2857142857142857
+|Sports And Fitness|	769|	0.42857142857142855
+|Home And Garden|	770|	0.5714285714285714
+|Electronics|	773|	0.7142857142857143
+|Fashion|	775|	0.8571428571428571
+|Books And Stationery|	776|	1
 
-### Research Question 3
-Do the fastest-filling sellers alos maintain the highest customer ratings, and what does this relationship reveal about the seller-side drivers of revenue underperformace?
 
-**Sub-question 1:** Does the level of fullfillment time of each sellers impact their customer rating in the market
+### Research Question 4
+What is the relationship between how fast sellers fulfil orders and the ratings they receive from customers?
+
+**Metric:** Sellers Fulfillment Efficiency
 
 ```sql
 SELECT
@@ -526,75 +566,6 @@ LIMIT 20;
 |VogueNG|	5.26	|4.18
 |QuickTech NG|	5.38|	3.69
 
-
-**Sub-question 2:** For consideration for a top seller bonus, who are the most productive sellers with a considerable high rating and have completed at least 10 orders 
-
-```sql
-SELECT 
-	s.seller_name,
-	ROUND(AVG(r.rating),2) AS average_rating,
-	SUM(o.total_amount) AS total_revenue
-FROM cleaned_sellers s
-LEFT JOIN cleaned_orders o
-	ON s.seller_id = o.seller_id
-LEFT JOIN cleaned_reviews r
-	ON r.order_id =o.order_id
-WHERE EXTRACT(YEAR FROM order_date) = 2024
-GROUP BY s.seller_id,s.seller_name
-HAVING COUNT(o.order_id) >= 10
-	AND AVG(r.rating) >= 4.00
-ORDER BY total_revenue DESC
-LIMIT 10;
-```
-
-**Result**
-
-|seller_name|average_rating|total_revenue
-|----|-----|----|
-|SportsCentral NG|	4.08|	15053739.46
-|GlowBeauty Shop|	4.29	|14470467.06
-|GreenSpace NG|	4.50	|13934943.44
-|HomeNest NG|	4.50	|13131469.72
-|BeautyNation NG|	4.27|	13111651.24
-|FitZone NG|	4.20	|12282326.09
-|VogueNG|	4.22	|11929761.12
-|HomeEssentials NG|	4.14|	11690992.11
-|SkinGlow NG|	4.22|	11471932.44
-|CozyHome NG|	4.00|	11193098.83
-
-### Supporting Question
-How does diverese customer groupings contribute to the revenue of the business in 2024?
-
-```sql
-SELECT
-	customer_segment,
-	COUNT(customer_id) AS customer_count,
-	ROUND(AVG(total_spend),2) AS average_spend,
-	SUM(total_spend) AS revenue_contribution
-FROM(
-	SELECT
-		customer_id,
-		SUM(total_amount) AS total_spend,
-		CASE
-			WHEN SUM(total_amount) >= 100000 THEN 'High Spenders'
-			WHEN SUM(total_amount) BETWEEN 50000 AND 99999 THEN 'Medium Spenders'
-			WHEN SUM(total_amount) < 50000 THEN 'Low Spenders'
-		END AS customer_segment
-	FROM cleaned_orders
-	WHERE EXTRACT(YEAR FROM order_date) = 2024
-	GROUP BY customer_id
-)
-GROUP BY customer_segment;
-```
-
-**Result**
-
-|customer_segment|customer_count|average_customer_spend|total_average|
-|----|-----|----|----|
-|High Spenders|	603|	1446150.38|	872028676.13
-|Low Spenders|	47	|22796.30|	1071426.11
-|Medium Spenders|	27	|67692.48|	1827697.03
-
 #### Full analysis queries available here 
 > 📄 [data_analysis.sql](./scripts/data_analysis.sql)
 
@@ -603,26 +574,25 @@ GROUP BY customer_segment;
 ## Findings
 
 ### Research Question 1
-
-1. Subquestion 1 shows that 30 days conversion rate for all 5 states is significantly low - below 50% for each states. This shows that TradeZone struggles to convert its new users as early as possible. This program could be as a result of sereval reasons such as **low perceived business credibility**, **difficulity in usablity of the website**, **low representation of ideal users for the business**, and **requirement to nudge the customer to purchase a product**.
-2. Then, subsection 2 tells our finidings further as it shows us that among these early purchasing customers across 5 states, a high proportion are retained as they make an order in the next 90 days. Rivers, Oyo and Lagos has the highest rate over 80% and FCT and Kano fell behind with 68.42% and 66.67% respectivity. This is a positive outcome overall, however there is concern with the high margin difference between 3rd and 4th on the list. This analysis can help us narrow our selected issues to three, it removes the possibility of low representation of ideal user for the business.
-
+Findings shows that 30 days conversion rate for all 5 states is significantly low - below 50% for each states. This shows that TradeZone struggles to convert its new users as early as possible. This program could be as a result of sereval reasons such as **low perceived business credibility**, **difficulity in usablity of the website**, **low representation of ideal users for the business**, and **requirement to nudge the customer to purchase a product**.
+   
 ### Research Question 2
-
-1. Analysis in this section indicates that top-selling products are concentrated on only Electronics products. This could mean two things for our business a) our revenue relies heavily on electronic which creates two things for our business. b) Electronics is simply a revenue anchor but other products contribute significantly to the revenue. To approve or refute either hypothesis, a sub analysis was made which was revenue proportion test to understand the level of dependence or independence of our revenue on electronic category and order distribution spread to determine whether high revenue of electronics is supported by volume or value.
-2. The revenue proportion test indicates that approximatelt 56% of TradeZone E-commerce is generated by Electronic category while the remaining 6 catgories contributes 46% to the revenue. Electronics in 20th percentaile in the order distribution spread adds that high electronic revenues is due to value rather volume. This results shows that electronic significanly impact on the business' total revenue. While this can be good, it shows our business relies heavily on elecronics sales and this places the business on risk- any market price crash on electronics could affect the revenue significanly.
+This analysis moves previous finidings further as it shows us that among these early purchasing customers across 5 states, a high proportion are retained as they make a second order in the next 90 days. Rivers, Oyo and Lagos has the highest rate over 80% and FCT and Kano fell behind with 68.42% and 66.67% respectivity. This is a positive outcome overall, however there is concern with the high margin difference between 3rd and 4th on the list. This analysis can help us narrow our selected issues to three, it removes the possibility of low representation of ideal user for the business.
 
 ### Research Question 3
+1. Finding shows that the leading product is the HP Pavilion 15 Laptop at 26.7 million from just 25 orders and at the bottom of the top 10 is Anker PowerBank at 17.7 milion from 19 orders. However, analysis indicates that top-selling products are concentrated on only Electronics products due to high price value. This could mean two things for our business a) our revenue relies heavily on electronic which creates two things for our business. b) Electronics is simply a revenue anchor but other products contribute significantly to the revenue. To approve or refute either hypothesis, a sub analysis was made which was revenue proportion test to understand the level of dependence or independence of our revenue on electronic category and order distribution spread to determine whether high revenue of electronics is supported by volume or value.
+2. The revenue proportion by category indicates that approximately 55% of TradeZone E-commerce is generated by Electronic category while the remaining 6 catgories contributes approxiamtely 45% to the revenue. Electronics in 70th percentaile in the order distribution spread adds that high electronic revenues is also supported by volume of orders in addition to its price value. These results shows that electronic significantly impact on the business' total revenue. While this can be good, it also shows our business relies heavily on elecronics sales and this places the business on risk- any market price crash on electronics could affect the overall revenue negatively.
 
-1. The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to seller inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
+### Research Question 4
+The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to seller inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
 
 ---
 
 ## Recommendations
 
-1. There is yet to be a conclusion on the certain issue hindering early customer conversions due to lack of data and information. For example, we could have understood if we attract the right customers for each products if we had customer ages and then conduct an analysis to approve or refute this issue accordingly. While data limitation prevents a definitive conclusion, teh rentention allows us to narrow the probable causes to three. Each carries a different cost of investigation and the following approach is recommeded. To nudge new users, you will most likely need an incentive like new bonus discount or promotion sales like a black friday once in a month for a limited period. If something similar already exist, it futher narrows our issue to two - low business credibility or difficult website usability. Issue of Website usability can be looked at with a very small group of people even employees. Since our rating isn't up to highest standard and this is something that affect trust, we could focus on improving our rating for a long term and on a short term, display something that tells a postive story that would improve engagement - something like a testimony of delivery or system improvement.
+1. There is yet to be a conclusion on the certain issue hindering early customer conversions due to lack of data and information. For example, we could have understood if we attract the right customers for each products if we had customer ages and then conduct an analysis to approve or refute this issue accordingly. While data limitation prevents a definitive conclusion, the rentention allows us to narrow the probable causes to three. Each carries a different cost of investigation and the following approach is recommeded. To nudge new users, you will most likely need an incentive like new bonus discount or promotion sales like a black friday once in a month for a limited period. If something similar already exist, it futher narrows our issue to two - low business credibility or difficult website usability. Issue of Website usability can be looked at with a very small group of people even employees. Since our rating isn't up to highest standard and this is something that affect trust, we could focus on improving our rating for a long term and on a short term, display something that tells a postive story that would improve engagement - something like a testimony of delivery or system improvement.
 2. Although customer retention is high across all states, FCT and Kano seems to fall behind with a huge margin against the top 3 states (Rivers, Oyo and Lagos). This is worth paying attention to. We should look at what strategy is faciliting retention in the top states and adopt it to FCT and Kano. However it is important to accommodate the context of the market share in both states.
-3. This is perphas the most important segment the company must address crtically. Based on the sub-hypotheses, findings shows that our revenue is reliant on one category- electronics. I would advice we diversify our revenue across multiple products especially if we want inclusive and sustainable growth. For a start, we should improve marketing on 3-4 products with high numbers of orders, as well as, incentive that could attract much sales to the others while still maintaining electronics revenue generation. Home and Garden has the second highest revenue and highest number of orders. This makes the category the most immediate product that should be looked into in the diversification process.
+3. This is perphas the most important segment the company must address crtically. Based on the sub-hypotheses, findings shows that our revenue is reliant on one category- electronics. I would advice we diversify our revenue across multiple products especially if we want inclusive and sustainable growth. For a start, we should improve marketing on 3-4 products with high numbers of orders, as well as, incentive that could attract much sales to the others while still maintaining electronics revenue generation. Home and Garden has the second highest revenue and 4th highest number of orders. This makes the category the most immediate product that should be looked into in the diversification process.
 4. Since it is clear that fulfillment time does not single-handely determine customer rating. Other factors such as state of packaging, quality of products, and value and durability expectation could be looked it. To improve ratings overall, TradeZone could adopt a centralised delivery system whereby it handles the delivery of orders. It would manage delivery from packaging, transportation and customer communication during the process. However this system may be costly to build, it would ensure that TradeZone has control over sitaution concerning delivery and at such, improve overall rating. To better understand our customers, we can include a review box to welcome comments after rating. Additionaly, accountability and transparency is improtant for rating. Before products appear on website, they should first be scrutinized by TradeZone and when they appear on website, users should know the conditions that their products come with. The centralized delivery infrasture can be a long term project while the accountable and transparent solution should be a short term solution. Also, customers with valid review complaint could be reached out to and compenseted and this could significantly impact on ratings.  
 
 ---
