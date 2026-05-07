@@ -1,5 +1,4 @@
 # TradeZone_E-commerce_Analysis
-
 ---
 
 ## Table of Contents
@@ -120,9 +119,10 @@ sellers
 Despite growth, TradeZone e-commerce company is challenged with operational problems such as declining customer retention, unproductive sellers and underperforming products, thereby limiting sustainable revene growth. 
 
 **Research Questions**
-1. Do new customers in 2024 who make their first purchase within 30 days of signing up stay longer on the platform, and does this differ across Nigerian states?
-2. Which products are the strongest contributors to TradeZone's revenue in 2024, and what does this reveal about how revenue is distributed across product categories?
-3. What is the relationship between how fast sellers fulfil orders and the ratings they receive from customers?
+1. How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and does this differ across Nigerian states?
+2. How effective is TradeZone at retaining customers who made their first purchase within 30 days of signup in 2024, and does this differ across Nigerian states?
+3. Which products are the strongest contributors to TradeZone's revenue in 2024, and what does this reveal about how revenue is distributed across product categories?
+4. What is the relationship between how fast sellers fulfil orders and the ratings they receive from customers?
 
 ---
 
@@ -139,7 +139,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 |payment   |amount   | 155     |
 |products    |unit_price   | 4     |
 
-**Observation:** The missing unit price and total amount arcoss order_items, orders and payments are connected to missing unit price values in products. Also, the missing delivery date are orders that hadn't been recorded as completed.
+**Observation:** The missing unit price and total amount across order_items, orders and payments are connected to missing unit price values in products. Also, the missing delivery date are orders that hadn't been recorded as completed.
 
 ### Distinct Values Check
 
@@ -170,7 +170,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 |Lagos|	52|
 |Ibadan|29|
 
-**Observation:** The city column contains 23 variations of the same 5 values as a result of typos, inconsistent cases and unwanted spacings among others.  
+**Observation:** The city column contains 23 variations of the same 5 values as a result of typos, inconsitent cases and unwanted spacings among others.  
 
 #### Category Columns - products table
 |Values      |Count|
@@ -199,7 +199,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 |Home and Garden|	2|
 |sports & fitness|	1|
 
-**Observation:** The product column contains 28 variations of the same 7 values due to occurences of typos, inconsistent cases and unwanted spacings among others.  
+**Observation:** The product column contains 28 variations of the same 7 values due to occurences of typos, inconsitent cases and unwanted spacings among others.  
 
 #### City Columns - sellers table
 |Values       |Count|
@@ -324,7 +324,7 @@ Specific cases have been explained in data profling section above in city column
 
 ## Analysis
 
-Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. 
+Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis.
 
 ### Research Question 1
 How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and does this differ across Nigerian states?
@@ -609,7 +609,11 @@ The metrics shows that there is no close relationship between fulfillment time a
 --- 
 
 ## Conclusion
+The purpose of this analysis was to gain insights into three key aspects of TradeZone's business performance in 2024: Customer conversion and retention, Product revenue contribution, and Seller fulfilment efficiency. In each of the three zones the results indicate a real strength in business, but significant structural issues that need to be resolved to enable sustainable development. TradeZone has seen a consistent inability to turn newly signed up users into first-time buyers within 30 days of signing up, with conversion rates in all 5 states remaining below 50%. But, with the retention rates being high in Rivers, Oyo and Lagos, the right customers are being reached. The issue isn't who is signing up, it's what's happening from sign up to purchase. Addressing this disconnect via trust building, usability enhancements, and specific conversion incentives is one of the quickest avenues the business has to do so.
 
+The analysis shows a high concentration risk on the product/revenue side. Electronics makes up about 55% of total revenue in 2024 and leads revenue and order volume by being at the 70th percentile of order distribution for all categories. The top 10 revenue-generating products are all in the Electronics category, with the remaining 6 categories contributing less than the top segment. The second highest revenue category is Home and Garden which is the most realistic for revenue diversification as a starting point. The fulfilment analysis further confirms that speed of delivery is not enough to guarantee customer satisfaction, adding an extra level of difficulty. The lack of correlation between fulfilment speed and customer ratings indicates that other factors like product quality, packaging standards, and the value for money, are as important and possibly more of determining the customers' perception on the platform.
+
+These results collectively suggest a business that is strategically focused and operationally functional. To achieve inclusive and sustainable revenue growth, TradeZone will need to make conscious and careful investments in conversion optimisation, category diversification and a seller quality system that will not just focus on speed, but the whole customer experience. The approach that will be taken in responding to these challenges will be structured and prioritized to enhance TradeZone's strengths and mitigate those vulnerabilities created by the existing revenue structure.
 
 
 
