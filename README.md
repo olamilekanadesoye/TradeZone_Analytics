@@ -21,7 +21,7 @@ This project is a typical end-to-end data analytics project on the dataset of a 
 - Data Analysis - the stage that involved drawing insights from data to make actionable recommendations
 - Data Visualisation (In progress) - the final stage to create a dashboard and visualize insights for easy understanding of    analyses and findings
 
-**Business Goal**: To gain insights about customer behaviors, sellers efficiecy and product productivity and help Head of Products and Head of Sales drive strategic plans and decsion making for 2025 business year. 
+**Business Goal**: To gain insights about customer behaviors, sellers efficiency and product productivity and to help Head of Products and Head of Sales drive strategic plans and decsion making for 2025 business year. 
 
 **Tools Used**
 - PostgreSQL - data cleaning and analysis
@@ -29,7 +29,7 @@ This project is a typical end-to-end data analytics project on the dataset of a 
 
 ---
 ## About Dataset
-The dataset is an hypothetical dataset created by organisers of HNG internship. It is a relational database containing 7 tables such as customer, sellers, products, orders items, orders, payments and reviews. The dataset contains approximately 11,500 rows and 45 columns across all tables
+The dataset is an hypothetical dataset that replicates a typical E-commerce business organisation. It is a relational database containing 7 tables such as customer, sellers, products, orders items, orders, payments and reviews. The dataset contains approximately 11,500 rows and 45 columns across all tables
 
 |Table      |Rows  |Columns |Description                                              |
 |-----------|------|------- |-------------------------------------------              |
@@ -127,7 +127,7 @@ Despite growth, TradeZone e-commerce company is challenged with operational prob
 ---
 
 ## Data Profiling
-Before any cleaning or analysis was performed, all 7 tales were examined to understand its structure, completeness and quality. Below is a summary of finidngs across multiples tables
+Before any cleaning or analysis was performed, all 7 tales were examined to understand its structure, completeness and quality. Below is a summary of finidngs across multiples tables:
 
 ### Missing Values
 |Table      |Columns|Rows   |
@@ -172,7 +172,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 
 **Observation:** The city column contains 23 variations of the same 5 values as a result of typos, inconsistent cases and unwanted spacings among others.  
 
-#### product category Columns - customers table
+#### Category Columns - products table
 |Values      |Count|
 |-----------|------  |  
 |Fashon|	4|
@@ -282,7 +282,7 @@ Specific cases have been explained in data profling section above in city column
 
 **Result:** All text columns standardized across affected tables
 
-### Step 2: Standardize Numerica Columns
+### Step 2: Standardize NumericaL Columns
 
 **Tables affected:** reviews
 **Issues Found:** Inconsitent rating number such as 0,-1, and 7 were idetified in the rating column.
@@ -299,7 +299,7 @@ Specific cases have been explained in data profling section above in city column
 
 **Issues Found:** missing unit prices values in products and order_items table, mising total amoount values in order_items payment, and orders tables and missing delivery date values in the orders table
 
-**Decision:** After close observation, missing unit prices values in product table was connected in to the missing unit prices and total amount in other tables. With the help of browser and AI, an approximate average price was selected to replace the missing values. Once mising values of products were sorted, JOIN was used reflect unit_price of cleaned_products to solve mising values in order and order_items. However, total_amount of payment table was left untouched. For the missing delivery data, no action was made. 
+**Decision:** After close observation, missing unit prices values in product table was connected to the missing unit prices and total amount in multiple tables. With the help of browser and AI, an approximate average price was selected to replace the missing values. Once mising values of products were sorted, JOIN was used reflect unit_price of cleaned_products to solve mising values in order and order_items. However, total_amount of payment table was left untouched. For the missing delivery data, no action was made. 
 
 **Reason:** The decision to replace unit_price with estimated average values gotten from the internet mirrors a real-world situation whereby in the same situation, a data analyst is expected to trace the seller_id and get information about the unit price. For inaction in payment table, through observation identified that some amount not recorded were not connected to missing price, and this could signify audit to uncover suspicious activities. While for the missing delivery date values, the missing values simply reflects orders that hasn't been completed yet. 
 
@@ -324,7 +324,7 @@ Specific cases have been explained in data profling section above in city column
 
 ## Analysis
 
-Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. To answer each reseach hypothetical questions, 2 business questions were looked into. 
+Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis. 
 
 ### Research Question 1
 How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and does this differ across Nigerian states?
@@ -453,6 +453,7 @@ LIMIT 10;
 |Anker PowerBank 20000mAh USB-C	|Electronics|	17729180.30|	19
 
 **Sub-question 1a:** What percentage does Electronics category contribute to TradeZone overall revenue?
+
 **Metric:** Revenue Proportion by Category 
 
 ```sql
@@ -486,6 +487,7 @@ FROM(
 |Sports And Fitness|	119743589.75|	874927799.27|	13.69
 
 **Sub-question 1b:** Is Electronics high revenue supported by the volume of orders?
+
 **Metric:** Order Distribution by Category 
 
 ```sql
@@ -518,6 +520,7 @@ FROM(
 |Fashion|	775|	0.8571428571428571
 |Books And Stationery|	776|	1
 
+**Comment:** Findings show Electronics category dominated top revenue generating products, therefore two sub-analysis were made to understand the effect on TradeZone business. See [Findings](#findings) for more understanding
 
 ### Research Question 4
 What is the relationship between how fast sellers fulfil orders and the ratings they receive from customers?
@@ -584,7 +587,7 @@ This analysis moves previous finidings further as it shows us that among these e
 2. The revenue proportion by category indicates that approximately 55% of TradeZone E-commerce is generated by Electronic category while the remaining 6 catgories contributes approxiamtely 45% to the revenue. Electronics in 70th percentaile in the order distribution spread adds that high electronic revenues is also supported by volume of orders in addition to its price value. These results shows that electronic significantly impact on the business' total revenue. While this can be good, it also shows our business relies heavily on elecronics sales and this places the business on risk- any market price crash on electronics could affect the overall revenue negatively.
 
 ### Research Question 4
-The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to seller inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
+The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to rating inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
 
 ---
 
