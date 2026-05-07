@@ -334,6 +334,17 @@ Following data cleaning, analyses were made to answer our research questions and
 **Total Revenue:** 341827.56
 **Average Order Value:** N341,827.56
 
+``` sql
+SELECT
+    COUNT(DISTINCT c.customer_id) AS Total_Customers,
+    COUNT(DISTINCT o.order_id) AS Total_Orders,
+    SUM(o.total_amount) AS Total_Revenue,
+    ROUND(SUM(o.total_amount) / COUNT(DISTINCT o.order_id), 2) AS Average_Order_Value
+FROM cleaned_customers c
+LEFT JOIN cleaned_orders o 
+    ON c.customer_id = o.customer_id;
+```
+
 ### Research Question 1
 How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and how does this differ across Nigerian states?
 
