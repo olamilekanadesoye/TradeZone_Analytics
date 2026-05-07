@@ -1,4 +1,4 @@
-# TradeZone_E-commerce_Analysis
+# TradeZone E-commerce Analysis
 ---
 
 ## Table of Contents
