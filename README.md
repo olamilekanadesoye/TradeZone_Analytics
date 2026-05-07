@@ -15,7 +15,7 @@
 
 ## Project Overview
 This project is a typical end-to-end data analytics project on the dataset of a hypothetical e-commerce called TradeZone covering:
-- Data Profiling - a rigorous examination of the tables in the dataset to identify cases of bad quality data
+- Data Profiling - a rigorous examination of the entire dataset to identify cases of bad quality data
 - Data Cleaning - a process that transfroms substandard data to quality data for accurate analysis
 - Data Analysis - the stage that involved drawing insights from data to make actionable recommendations
 - Data Visualisation (In progress) - the final stage to create a dashboard and visualize insights for easy understanding of    analyses and findings
@@ -257,7 +257,7 @@ Before any cleaning or analysis was performed, all 7 tales were examined to unde
 |PROD0028|	TP-Link WiFi Router AC1200 - v2|	316366.34|	3.20
 
 
-**Observation:** These products were identifies as outliers which could distort accurate finding during analysis.
+**Observation:** These products were identifed as outliers which could distort accurate finding during analysis.
 
 ### Additional Infromation
 Based on other investigations such duplicates checks, data type check, and format and pattern consistency check, there were no anomalies detected. 
@@ -269,13 +269,13 @@ Based on other investigations such duplicates checks, data type check, and forma
 
 ## Data Cleaning Process
 
-After profiling the data, it made it easier to clean data to ensure quality and conisistency for accurate analysis. Like profiling, this process follows a structured approach. All tables were cleaned into a VIEW rather than creating another table to preverse the original data and encorage flexibility. Each VIEW was created with CREATE OR REPLACE VIEW and named as cleaned_prefix, for example cleaned_sellers and cleaned_orders.
+After profiling the data, it made it easier to clean data to ensure quality and conisistency for accurate analysis. Like profiling, this process follows a structured approach. All tables were cleaned into a VIEW rather than creating another table to preverse the original data and encourage flexibility. Each VIEW was created with CREATE OR REPLACE VIEW and named as cleaned_prefix, for example cleaned_sellers and cleaned_orders.
 
 ### Step 1: Standardize Text Columns
 
 **Tables affected:** customers, sellers, products
 
-**Issues Found:** Text columns across multiple tables contained inconsitent values, typos, inconsitent casing, and abbreviations.
+**Issues Found:** Text columns across multiple tables contained inconsistent values, typos, inconsistent casing, and abbreviations.
 Specific cases have been explained in data profling section above in city columns of customers and sellers table amd category column of products tables
 
 **Decision:** INITCAP, TRIM, CASE, Nested REPLACE functions to standardize all text values. CASE WHEN was used to expand abbreviations into full reabable values
@@ -285,11 +285,12 @@ Specific cases have been explained in data profling section above in city column
 ### Step 2: Standardize NumericaL Columns
 
 **Tables affected:** reviews
-**Issues Found:** Inconsitent rating number such as 0,-1, and 7 were idetified in the rating column.
+
+**Issues Found:** Inconsistent rating number such as 0,-1, and 7 were idetified in the rating column.
 
 **Decision:** Used CASE WHEN to convert non-excepted rating number to their nearest possible number rating. 0,-1 to 1 and 7 to 5
 
-**Reason:** To ensure that ratings is consistent with expected range of 1-5, while ensuring no loss of data.
+**Reason:** To ensure that ratings is consitent with expected range of 1-5, while ensuring no loss of data.
 
 **Result:** The rating column in the review table now contain rating within the range of 1-5
 
@@ -301,7 +302,7 @@ Specific cases have been explained in data profling section above in city column
 
 **Decision:** After close observation, missing unit prices values in product table was connected to the missing unit prices and total amount in multiple tables. With the help of browser and AI, an approximate average price was selected to replace the missing values. Once mising values of products were sorted, JOIN was used reflect unit_price of cleaned_products to solve mising values in order and order_items. However, total_amount of payment table was left untouched. For the missing delivery data, no action was made. 
 
-**Reason:** The decision to replace unit_price with estimated average values gotten from the internet mirrors a real-world situation whereby in the same situation, a data analyst is expected to trace the seller_id and get information about the unit price. For inaction in payment table, through observation identified that some amount not recorded were not connected to missing price, and this could signify audit to uncover suspicious activities. While for the missing delivery date values, the missing values simply reflects orders that hasn't been completed yet. 
+**Reason:** The decision to replace unit_price with estimated average values gotten from the internet mirrors a real-world situation whereby a data analyst is expected to trace the seller_id and get information about the unit price. For inaction in payment table, observation identified that some amount not recorded were not connected to missing price, and this could signify audit to uncover suspicious activities. While for the missing delivery date values, the missing values simply reflects orders that hasn't been completed yet. 
 
 **Result:** The unit_price and amount column across multiple tables now contain values. In the VIEW, line total of order_items, and amount of orders table were renamed to total_amount.
 
@@ -326,8 +327,15 @@ Specific cases have been explained in data profling section above in city column
 
 Following data cleaning, analyses were made to answer our research questions and approve or refute our hypothesis.
 
+### Key Metrics
+
+**Total Customers:** N1,030,610,090.90
+**Total Orders:** 3015
+**Total Revenue:** 341827.56
+**Average Order Value:** N341,827.56
+
 ### Research Question 1
-How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and does this differ across Nigerian states?
+How effective is TradeZone at converting newly acquired customers in 2024 into first-time buyers within 30 days of signup , and how does this differ across Nigerian states?
 
 **Metric:** Customer Acquisition and 30 days Conversion
 
@@ -365,7 +373,7 @@ ORDER BY total_new_signups DESC;
 |Kano|	58|	18|	31.00|
 
 ### Research Question 2
-How effective is TradeZone at retaining customers who made their first purchase within 30 days of signup in 2024, and does this differ across Nigerian states?
+How effective is TradeZone at retaining customers who made their first purchase within 30 days of signup in 2024, and how does this differ across Nigerian states?
  
 **Metric:** Early Customer Cohort Retention
 
@@ -580,23 +588,23 @@ LIMIT 20;
 Findings shows that 30 days conversion rate for all 5 states is significantly low - below 50% for each states. This shows that TradeZone struggles to convert its new users as early as possible. This program could be as a result of sereval reasons such as **low perceived business credibility**, **difficulity in usablity of the website**, **low representation of ideal users for the business**, and **requirement to nudge the customer to purchase a product**.
    
 ### Research Question 2
-This analysis moves previous finidings further as it shows us that among these early purchasing customers across 5 states, a high proportion are retained as they make a second order in the next 90 days. Rivers, Oyo and Lagos has the highest rate over 80% and FCT and Kano fell behind with 68.42% and 66.67% respectivity. This is a positive outcome overall, however there is concern with the high margin difference between 3rd and 4th on the list. This analysis can help us narrow our selected issues to three, it removes the possibility of low representation of ideal user for the business.
+This analysis moves previous finidings further as it shows us that among these early purchasing customers across 5 states, a high proportion are retained as they make a second order in the next 90 days. Rivers, Oyo and Lagos has the highest rate over 80% and FCT and Kano fell behind with 68.42% and 66.67% respectivity. This is a positive outcome overall, however there is concern with the high margin difference between 3rd and 4th on the list. This analysis can help us narrow our selected issues to three, it removes the possibility of low representation of ideal user for the business. However futher analysis can be conducted to be valid.
 
 ### Research Question 3
-1. Finding shows that the leading product is the HP Pavilion 15 Laptop at 26.7 million from just 25 orders and at the bottom of the top 10 is Anker PowerBank at 17.7 milion from 19 orders. However, analysis indicates that top-selling products are concentrated on only Electronics products due to high price value. This could mean two things for our business a) our revenue relies heavily on electronic which creates two things for our business. b) Electronics is simply a revenue anchor but other products contribute significantly to the revenue. To approve or refute either hypothesis, a sub analysis was made which was revenue proportion test to understand the level of dependence or independence of our revenue on electronic category and order distribution spread to determine whether high revenue of electronics is supported by volume or value.
-2. The revenue proportion by category indicates that approximately 55% of TradeZone E-commerce is generated by Electronic category while the remaining 6 catgories contributes approxiamtely 45% to the revenue. Electronics in 70th percentaile in the order distribution spread adds that high electronic revenues is also supported by volume of orders in addition to its price value. These results shows that electronic significantly impact on the business' total revenue. While this can be good, it also shows our business relies heavily on elecronics sales and this places the business on risk- any market price crash on electronics could affect the overall revenue negatively.
+1. Finding shows that the leading product is the HP Pavilion 15 Laptop at N26.7 million from just 25 orders and at the bottom of the top 10 is Anker PowerBank at N17.7 milion from 19 orders. However, analysis indicates that top-selling products are concentrated on only Electronics products due to high price value. This could mean two things for our business a) our revenue relies heavily on electronic which creates a problem of dependence. b) Electronics is simply a revenue anchor but other products contribute significantly to the revenue. To approve or refute either hypothesis, a sub analysis was made which was revenue proportion test to understand the level of dependence or independence of our revenue on electronic category and order distribution spread to determine whether high revenue of electronics is supported by volume.
+2. The revenue proportion by category indicates that approximately 55% of TradeZone E-commerce is generated by Electronic category while the remaining 6 catgories contributes approxiamtely 45% to the revenue. Electronics in 70th percentaile in the order distribution spread adds that high electronic revenues is also supported by volume of orders in addition to its price value. These results shows that electronic significantly impact on the business' total revenue. While this can be good, it shows our business relies heavily on elecronics sales and this places the business on risk- any market price crash on electronics could affect the overall business revenue negatively.
 
 ### Research Question 4
-The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55. This shows that multiple factors other than fulfillment time contribute to rating inefficiency. These factors could be packaging, product quality upon arrival or value and durability expectation.
+The metrics shows that there is no close relationship between fulfillment time and customer rating. For example, RunFast NG has lowest fulfilment day but has a low customer rating at 3.25 and SportsCentral NG has a long fulfiment time of 4.10 but high average customer rating of 4.08. Accordingly, AgriMartNG and FashionHub NG has the same average fulfillment day of 4.52 but very opposite average customer rating of 2.50 and 3.55 respectively. This shows that multiple factors other than fulfillment time contribute to rating inefficiency. These factors could be packaging standard, product quality or value for money.
 
 ---
 
 ## Recommendations
 
-1. There is yet to be a conclusion on the certain issue hindering early customer conversions due to lack of data and information. For example, we could have understood if we attract the right customers for each products if we had customer ages and then conduct an analysis to approve or refute this issue accordingly. While data limitation prevents a definitive conclusion, the rentention allows us to narrow the probable causes to three. Each carries a different cost of investigation and the following approach is recommeded. To nudge new users, you will most likely need an incentive like new bonus discount or promotion sales like a black friday once in a month for a limited period. If something similar already exist, it futher narrows our issue to two - low business credibility or difficult website usability. Issue of Website usability can be looked at with a very small group of people even employees. Since our rating isn't up to highest standard and this is something that affect trust, we could focus on improving our rating for a long term and on a short term, display something that tells a postive story that would improve engagement - something like a testimony of delivery or system improvement.
+1. There is yet to be a conclusion on the certain issue hindering early customer conversions due to lack of data and information. For example, we could have understood if we attract the right customers for each products if we had customer ages and then conduct an analysis to approve or refute this issue accordingly. While data limitation prevents a definitive conclusion, the retention analysis allows us to narrow the probable causes to three. Each carries a different cost of investigation and the following approach is recommeded. To nudge new users, you will most likely need an incentive like new bonus discount or promotion sales like a black friday once in a month for a limited period. If something similar already exist, it futher narrows our issue to two - low business credibility or difficult website usability. Issue of Website usability can be looked at with a very small group of people even employees. Since our rating isn't up to highest standard and this is something that affect trust, we could focus on improving our rating for a long term and on a short term, display something that tells a postive story that would improve engagement - something like a testimonies of good delivery or system improvement.
 2. Although customer retention is high across all states, FCT and Kano seems to fall behind with a huge margin against the top 3 states (Rivers, Oyo and Lagos). This is worth paying attention to. We should look at what strategy is faciliting retention in the top states and adopt it to FCT and Kano. However it is important to accommodate the context of the market share in both states.
 3. This is perphas the most important segment the company must address crtically. Based on the sub-hypotheses, findings shows that our revenue is reliant on one category- electronics. I would advice we diversify our revenue across multiple products especially if we want inclusive and sustainable growth. For a start, we should improve marketing on 3-4 products with high numbers of orders, as well as, incentive that could attract much sales to the others while still maintaining electronics revenue generation. Home and Garden has the second highest revenue and 4th highest number of orders. This makes the category the most immediate product that should be looked into in the diversification process.
-4. Since it is clear that fulfillment time does not single-handely determine customer rating. Other factors such as state of packaging, quality of products, and value and durability expectation could be looked it. To improve ratings overall, TradeZone could adopt a centralised delivery system whereby it handles the delivery of orders. It would manage delivery from packaging, transportation and customer communication during the process. However this system may be costly to build, it would ensure that TradeZone has control over sitaution concerning delivery and at such, improve overall rating. To better understand our customers, we can include a review box to welcome comments after rating. Additionaly, accountability and transparency is improtant for rating. Before products appear on website, they should first be scrutinized by TradeZone and when they appear on website, users should know the conditions that their products come with. The centralized delivery infrasture can be a long term project while the accountable and transparent solution should be a short term solution. Also, customers with valid review complaint could be reached out to and compenseted and this could significantly impact on ratings.  
+4. Since it is clear that fulfillment time does not single-handedly determine customer rating. Other factors such as state of packaging standard, quality of products, and value for money could be looked it. For the long term, TradeZone could adopt a centralised delivery system whereby it handles the delivery of orders. It would manage delivery from packaging and transportation to customer communication during the process. However this system may be costly to build, it would ensure that TradeZone has control over sitaution concerning delivery and at such, improve overall rating. If there were a data on rating comments or complaint, we could have identified the particualr issue to pay attention on. On a short term, we can include a review box to welcome comments after rating to understand our customer opinions about their orders. Additionaly, accountability and transparency is improtant for rating. Before products appear on website, they should first be scrutinized by TradeZone and when they appear on website, users should know the conditions that their products come with. Also, customers with valid review complaint could be reached out to and compensated with a discount coupon - this could significantly impact on ratings.  
 
 ---
 
