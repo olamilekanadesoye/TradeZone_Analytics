@@ -43,17 +43,17 @@ SELECT
 	COUNT(first_purchase) AS bought_within_30_days,
 	ROUND(COUNT(first_purchase) * 100 / COUNT(customer_id),2) AS percentage
 FROM(
-	SELECT DISTINCT ON (c.customer_id)
+	SELECT
 		c.customer_id,
 		c.state,
-		o.order_id,
 		c.signup_date,
-		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+		MIN(o.order_date) AS first_purchase
 	FROM cleaned_customers c
 	LEFT JOIN cleaned_orders o
 		ON c.customer_id = o.customer_id
 		AND o.order_date <= c.signup_date + INTERVAL '30 days'
 	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
+	GROUP BY c.customer_id, c.state, c.signup_date
 )
 GROUP BY state
 ORDER BY total_new_signups DESC;
@@ -68,20 +68,20 @@ Task: For customers who made a purchase within their first 30 days, what percent
 =====================================================================================================================
 */
 WITH converters AS(
-	SELECT DISTINCT ON (c.customer_id)
+	SELECT
 		c.customer_id,
 		c.state,
-		o.order_id,
 		c.signup_date,
-		MIN(o.order_date) OVER(PARTITION BY c.customer_id) AS first_purchase
+		MIN(o.order_date) AS first_purchase
 	FROM cleaned_customers c
 	LEFT JOIN cleaned_orders o
 		ON c.customer_id = o.customer_id
 	WHERE EXTRACT(YEAR FROM c.signup_date) = 2024
 	AND o.order_date <= c.signup_date + INTERVAL '30 days'
+	GROUP BY c.customer_id, c.state, c.signup_date
 ),
 retainers AS(
-	SELECT DISTINCT ON (e.customer_id)
+	SELECT
 		e.*
 	FROM converters e
 	WHERE EXISTS(
@@ -128,37 +128,54 @@ LIMIT 10;
 
 /*
 =====================================================================================================================
-SECTION 5:Review Rating and Sales Performance
+SECTION 4a:  Revenue Proportion by Category
 =====================================================================================================================
-Purpose: To assess whether product quality, as reflected in customer ratings, correlates with revenue performance — 
-		 identifying whether low-rated products are undermining sustainable revenue growth.
-Task: Group products based on their average review rating into three categories: High rated, Mid and, Low rate.
-	  For each category, calculate the product count and total revenue
+Purpose: To determine the percetage electronics category contribute to the business
 =====================================================================================================================
 */
 SELECT
-	v.avg_rating_segment,
-	COUNT(DISTINCT v.product_id) AS product_count,
-	SUM(t.total_amount) AS total_revenue
+	*,
+	SUM(total_revenue) OVER() AS overall_total_revenue,
+	ROUND((total_revenue * 100) / SUM(total_revenue) OVER(),2) AS revenue_percentage_share
 FROM(
 	SELECT
-		product_id,
-		ROUND(AVG(rating),2) AS avg_review_rating,
-		CASE
-			WHEN ROUND(AVG(rating),2) >= 4.00 THEN 'High Rated'
-			WHEN ROUND(AVG(rating),2) BETWEEN 3.0 AND 3.99 THEN 'Mid Rated'
-			WHEN ROUND(AVG(rating),2) < 3.00 THEN 'Low Rated'
-		END AS avg_rating_segment
-	FROM cleaned_reviews
-	GROUP BY product_id
-) v
-LEFT JOIN cleaned_order_items t
-ON v.product_id = t.product_id
-GROUP BY avg_rating_segment;
+		p.category,
+		SUM(t.total_amount) AS total_revenue
+	FROM cleaned_products p
+	LEFT JOIN cleaned_order_items t
+		ON p.product_id = t.product_id
+	JOIN orders o
+		ON t.order_id = o.order_id
+	WHERE EXTRACT (YEAR FROM o.order_date) = 2024
+	GROUP BY p.category
+);
 
 /*
 =====================================================================================================================
-SECTION 6: Seller Fulfillment Efficiency
+SECTION 4b: Order Distribution by Category
+=====================================================================================================================
+Purpose: To determine whether Electronics high revenue is supported by volume of orders. 
+=====================================================================================================================
+*/
+SELECT
+	*,
+	CUME_DIST() OVER(ORDER BY number_of_orders) AS percentile
+FROM(
+	SELECT
+		p.category,
+		COUNT(t.order_id) AS number_of_orders
+	FROM cleaned_products p
+	LEFT JOIN cleaned_order_items t
+		ON p.product_id = t.product_id
+	JOIN cleaned_orders o
+		ON t.order_id = o.order_id
+	WHERE EXTRACT (YEAR FROM o.order_date) = 2024
+	GROUP BY p.category
+);
+
+/*
+=====================================================================================================================
+SECTION 5: Seller Fulfillment Efficiency
 =====================================================================================================================
 Purpose: To evaluate whether the level of seller fulfilment efficiency impact customer ratings. 
 Task: Calculate the average day between order placement and delivery for each seller. Return the top 20 sellers 
@@ -180,65 +197,3 @@ GROUP BY s.seller_name
 HAVING COUNT(o.order_id) >= 20
 ORDER BY average_fulfilment_day ASC
 LIMIT 20;
-
-/*
-=====================================================================================================================
-SECTION 7: Top Seller Bonus Qualification
-=====================================================================================================================
-Purpose: To reward high-performing sellers who demonstrate both commercial output and customer satisfaction, 
-		 reinforcing quality-driven seller behaviour on the platform.
-Task: Identify the top 10 sellers in 2024 by total revenue who completed at least 10 orders and have an 
-average customer rating of 4.0 or above. Include their total orders, average rating, and total revenue.
-=====================================================================================================================
-*/
--- Identify the top 10 sellers in 2024 by total revenue who completed at least 10 orders and have an average customer
--- rating of 4.0 or above. Include their average rating, and total revenue. 
-SELECT 
-	s.seller_name,
-	ROUND(AVG(r.rating),2) AS average_rating,
-	SUM(o.total_amount) AS total_revenue
-FROM cleaned_sellers s
-LEFT JOIN cleaned_orders o
-	ON s.seller_id = o.seller_id
-LEFT JOIN cleaned_reviews r
-	ON r.order_id =o.order_id
-WHERE EXTRACT(YEAR FROM order_date) = 2024
-GROUP BY s.seller_id,s.seller_name
-HAVING COUNT(o.order_id) >= 10
-	AND AVG(r.rating) >= 4.00
-ORDER BY total_revenue DESC
-LIMIT 10;
-
-
-/*
-=====================================================================================================================
-SECTION 8:Customer Spend Segmentation
-=====================================================================================================================
-Purpose: To analyse the distribution and revenue contribution of customers across different categories
-Task: Segemnt cusomers based on their total spend in 2024 into three groups: High spenders, Medium and Low Spenders. 
-	  For each group, calculate the customer count, average spend per customer and total revenue contribution
-=====================================================================================================================
-*/
-SELECT
-	customer_segment,
-	COUNT(customer_id) AS customer_count,
-	ROUND(AVG(total_spend),2) AS average_spend,
-	SUM(total_spend) AS revenue_contribution
-FROM(
-	SELECT
-		customer_id,
-		SUM(total_amount) AS total_spend,
-		CASE
-			WHEN SUM(total_amount) >= 100000 THEN 'High Spenders'
-			WHEN SUM(total_amount) BETWEEN 50000 AND 99999 THEN 'Medium Spenders'
-			WHEN SUM(total_amount) < 50000 THEN 'Low Spenders'
-		END AS customer_segment
-	FROM cleaned_orders
-	WHERE EXTRACT(YEAR FROM order_date) = 2024
-	GROUP BY customer_id
-)
-GROUP BY customer_segment;
-
-
-
-
